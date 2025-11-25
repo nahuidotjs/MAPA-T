@@ -1,0 +1,11 @@
+---
+title: "Mapa Urbano: Toluca de Lerdo"
+author: "Creado con R"
+output: 
+  html_document:
+    theme: paper
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
