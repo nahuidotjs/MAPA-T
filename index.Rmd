@@ -1,0 +1,75 @@
+---
+title: "Toluca: Mapa Urbano"
+output: 
+  html_document:
+    theme: paper
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+# Cargar librerías
+library(tidyverse)
+library(osmdata)
+library(sf)
+
+# --- CONFIGURACIÓN TOLUCA ---
+# Usamos "Toluca de Lerdo" para centrarlo bien en la ciudad
+ciudad <- "Toluca de Lerdo, Mexico"
+coords <- getbb(ciudad)
+
+# --- DESCARGA DE DATOS ---
+
+# 1. Calles Principales (Avenidas)
+calles_grandes <- coords %>%
+  opq() %>%
+  add_osm_feature(key = "highway", 
+                  value = c("motorway", "primary", "secondary", "trunk")) %>%
+  osmdata_sf()
+
+# 2. Calles Pequeñas (Barrios)
+calles_chicas <- coords %>%
+  opq() %>%
+  add_osm_feature(key = "highway", 
+                  value = c("tertiary", "residential", "living_street", "unclassified")) %>%
+  osmdata_sf()
+
+# 3. Parques (Alameda, Parque Metropolitano, etc.)
+parques <- coords %>%
+  opq() %>%
+  add_osm_feature(key = "leisure", value = "park") %>%
+  osmdata_sf()
+
+# --- DIBUJAR MAPA ---
+ggplot() +
+  # Capa Parques (Gris suave)
+  geom_sf(data = parques$osm_polygons,
+          fill = "#e0e0e0", color = NA) +
+  
+  # Capa Calles chicas (Gris medio, líneas finas)
+  geom_sf(data = calles_chicas$osm_lines,
+          inherit.aes = FALSE,
+          color = "#888888",
+          size = 0.15,
+          alpha = 0.6) +
+  
+  # Capa Calles grandes (Negro fuerte)
+  geom_sf(data = calles_grandes$osm_lines,
+          inherit.aes = FALSE,
+          color = "#1a1a1a",
+          size = 0.6,
+          alpha = 1) +
+  
+  # Encuadre
+  coord_sf(xlim = coords[1,], ylim = coords[2,], expand = FALSE) +
+  
+  # Estilo Limpio (Sin ejes)
+  theme_void() +
+  labs(caption = "TOLUCA DE LERDO") +
+  theme(
+    plot.margin = margin(1, 1, 1, 1, "cm"),
+    plot.caption = element_text(family = "sans", 
+                                size = 18, 
+                                hjust = 0.5, 
+                                face = "bold", 
+                                margin = margin(t = 15))
+  )
